@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CampaignPro</title>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, "Segoe UI", sans-serif; background: #f8fafc; color: #1e293b; display: flex; min-height: 100vh; }
+        
+        /* ================== PROFESSIONAL SIDEBAR ================== */
+        .sidebar { 
+            width: 270px; 
+            background: #111827; 
+            color: #cbd5e1; 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 1000;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid #1f2937;
+        }
+        .brand { 
+            padding: 24px 20px; 
+            font-size: 22px; 
+            font-weight: 800; 
+            color: #fff; 
+            border-bottom: 1px solid #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.3px;
+        }
+        .brand span { color: #10b981; }
+
+        .menu-label {
+            padding: 18px 20px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .nav-menu { list-style: none; padding: 0 12px; flex: 1; overflow-y: auto; }
+        .nav-menu li { margin-bottom: 6px; }
+        
+        /* Modern Touch & Interactive Button */
+        .nav-menu button {
+            width: 100%; 
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left; 
+            background: transparent; 
+            border: 1px solid transparent; 
+            padding: 12px 16px; 
+            color: #cbd5e1; 
+            font-size: 14px; 
+            font-weight: 600; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-menu button .btn-icon {
+            font-size: 18px;
+            width: 22px;
+            display: inline-flex;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+        
+        /* Hover & Touch Effects */
+        .nav-menu button:hover { 
+            background: #1f2937; 
+            color: #ffffff; 
+            transform: translateX(3px); 
+        }
+        .nav-menu button:active { 
+            transform: scale(0.98); 
+        }
+        
+        /* Active State */
+        .nav-menu button.active { 
+            background: #059669; 
+            color: #ffffff; 
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .nav-menu button.active .btn-icon {
+            transform: scale(1.1);
+        }
+
+        /* Logout Container */
+        .logout-box { padding: 18px 16px; border-top: 1px solid #1f2937; }
+        .logout-btn { 
+            width: 100%; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(239, 68, 68, 0.12); 
+            color: #fca5a5; 
+            border: 1px solid rgba(239, 68, 68, 0.25); 
+            padding: 12px; 
+            border-radius: 10px; 
+            font-size: 14px;
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        .logout-btn:hover { background: #dc2626; color: white; transform: translateY(-1px); }
+        .logout-btn:active { transform: scale(0.98); }
+
+        /* ================== MOBILE TOPBAR ================== */
+        .mobile-topbar {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 62px;
+            background: #111827;
+            color: white;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            z-index: 998;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+        }
+        .mobile-topbar .brand { border: none; padding: 0; }
+        .menu-btn { 
+            background: #1f2937; 
+            border: none; 
+            color: white; 
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 20px; 
+            cursor: pointer; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: .2s;
+        }
+        .menu-btn:hover { background: #374151; }
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 999;
+        }
+
+        /* ================== MAIN CONTENT ================== */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; width: 100%; }
+        .header { margin-bottom: 25px; }
+        .header h1 { font-size: 26px; color: #111827; margin-bottom: 5px; font-weight: 800; }
+        .header p { color: #64748b; font-size: 14px; }
+        
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        /* ================== CARDS & TABLES ================== */
+        .card { background: #fff; padding: 24px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.03); margin-bottom: 20px; overflow-x: auto; }
+        .card-title { font-size: 17px; font-weight: bold; margin-bottom: 18px; color: #111827; border-bottom: 1px solid #edf2f7; padding-bottom: 12px; }
+        
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        th, td { padding: 14px 15px; text-align: left; border-bottom: 1px solid #edf2f7; font-size: 14px; }
+        th { background: #f8fafc; color: #475569; font-weight: 700; }
+        
+        .badge { padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+        .badge.pending { background: #fef3c7; color: #92400e; }
+        .badge.active, .badge.approved { background: #dcfce7; color: #166534; }
+        .badge.rejected { background: #fee2e2; color: #991b1b; }
+        
+        .action-btn { padding: 7px 13px; border: none; border-radius: 7px; cursor: pointer; font-weight: bold; font-size: 12px; color: #fff; margin-right: 5px; margin-bottom: 5px; transition: .2s;}
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-approve { background: #059669; }
+        .btn-approve:hover:not(:disabled) { background: #047857; }
+        .btn-reject { background: #ef4444; }
+        .btn-reject:hover:not(:disabled) { background: #dc2626; }
+
+        /* ================== FORMS ================== */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 13px; color: #334155; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; transition: .2s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: #059669; box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+        }
+        .btn-submit { background: #059669; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: .2s; }
+        .btn-submit:hover { background: #047857; }
+
+        /* ================== MOBILE RESPONSIVE ================== */
+        @media (max-width: 768px) {
+            body { display: block; }
+            .mobile-topbar { display: flex; }
+            
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                box-shadow: 8px 0 25px rgba(0, 0, 0, 0.3);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; }
+            
+            .main-content { padding: 80px 15px 20px 15px; }
+            .header h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MOBILE TOPBAR -->
+    <div class="mobile-topbar">
+        <div class="brand">Campaign<span>Pro</span> Admin</div>
+        <button class="menu-btn" id="menuBtn">☰</button>
+    </div>
+    
+    <!-- SIDEBAR OVERLAY FOR MOBILE -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand" id="desktopBrand">
+            <span>⚡</span> Campaign<span>Pro</span>
+        </div>
+        
+        <div class="menu-label">Main Management</div>
+        
+        <ul class="nav-menu">
+            <li>
+                <button class="nav-btn active" data-target="dashboard">
+                    <span class="btn-icon">🏠</span>
+                    <span>Dashboard Overview</span>
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" data-target="deposits">
+                    <span class="btn-icon">💳</span>
+                    <span>Deposit Requests</span>
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" data-target="campaigns">
+                    <span class="btn-icon">📊</span>
+                    <span>Campaign Requests</span>
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" data-target="notifications">
+                    <span class="btn-icon">🔔</span>
+                    <span>Send Notification</span>
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" data-target="settings">
+                    <span class="btn-icon">⚙️</span>
+                    <span>System Settings</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="logout-box">
+            <button class="logout-btn" id="logoutBtn">
+                <span>🚪</span>
+                <span>Logout Admin</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard" class="section active">
+            <div class="header">
+                <h1>Dashboard Overview</h1>
+                <p>Welcome to CampaignPro Administration Panel</p>
+            </div>
+            <div class="card">
+                <h3>System Status: Operational</h3>
+                <p style="color: #64748b; margin-top: 8px;">Select a tab from the left menu to manage live deposits, user campaigns, and system settings.</p>
+            </div>
+        </section>
+
+        <!-- DEPOSITS SECTION -->
+        <section id="deposits" class="section">
+            <div class="header">
+                <h1>Deposit Requests</h1>
+                <p>Review, verify, and credit user wallet balances.</p>
+            </div>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Email</th>
+                            <th>Method</th>
+                            <th>Transaction ID</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="depositTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding: 20px;">Loading requests...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- CAMPAIGNS SECTION -->
+        <section id="campaigns" class="section">
+            <div class="header">
+                <h1>Campaign Requests</h1>
+                <p>Verify destinations, approve active campaigns, or process refunds on rejection.</p>
+            </div>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Email</th>
+                            <th>Campaign URL</th>
+                            <th>Countries</th>
+                            <th>Budget</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="campaignTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding: 20px;">Loading campaigns...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- NOTIFICATIONS SECTION -->
+        <section id="notifications" class="section">
+            <div class="header">
+                <h1>Broadcast Notification</h1>
+                <p>Deliver instant alerts and announcements to your users.</p>
+            </div>
+            <div class="card" style="max-width: 600px;">
+                <div class="card-title">Compose Notification</div>
+                <form id="notificationForm">
+                    <div class="form-group">
+                        <label>Target Audience</label>
+                        <select id="targetUser">
+                            <option value="all">All Users (Broadcast)</option>
+                            <option value="specific">Specific User (By User UID)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="userIdField" style="display: none;">
+                        <label>User UID</label>
+                        <input type="text" id="specificUserId" placeholder="Paste user UID here">
+                    </div>
+                    <div class="form-group">
+                        <label>Notification Title</label>
+                        <input type="text" id="notifTitle" required placeholder="e.g. System Maintenance Notice">
+                    </div>
+                    <div class="form-group">
+                        <label>Message Content</label>
+                        <textarea id="notifMessage" required placeholder="Type notification content..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">Dispatch Notification</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- SETTINGS SECTION -->
+        <section id="settings" class="section">
+            <div class="header">
+                <h1>System Settings</h1>
+                <p>Update live deposit receiving numbers and gateway credentials.</p>
+            </div>
+            <div class="card" style="max-width: 600px;">
+                <div class="card-title">Payment Accounts Configuration</div>
+                <form id="settingsForm">
+                    <div class="form-group">
+                        <label>bKash Number (Personal)</label>
+                        <input type="text" id="bkashNumber" placeholder="e.g. +8801700000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nagad Number (Personal)</label>
+                        <input type="text" id="nagadNumber" placeholder="e.g. +8801800000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Binance Pay ID</label>
+                        <input type="text" id="binanceId" placeholder="e.g. 528615911" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Save Payment Settings</button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- UI JAVASCRIPT -->
+    <script>
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        function closeSidebar() { 
+            sidebar.classList.remove('open'); 
+            overlay.classList.remove('show'); 
+        }
+        
+        menuBtn.addEventListener('click', () => { 
+            sidebar.classList.add('open'); 
+            overlay.classList.add('show'); 
+        });
+        
+        overlay.addEventListener('click', closeSidebar);
+
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('.section');
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navBtns.forEach(b => b.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.target).classList.add('active');
+                
+                if(window.innerWidth <= 768) closeSidebar();
+            });
+        });
+
+        document.getElementById('targetUser').addEventListener('change', function() {
+            document.getElementById('userIdField').style.display = this.value === 'specific' ? 'block' : 'none';
+        });
+    </script>
+
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { auth, db } from './firebase.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { collection, query, getDocs, getDoc, setDoc, addDoc, doc, updateDoc, increment, serverTimestamp, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Admin Security Check
+        const ADMIN_EMAILS = ["sakilmollaxyz@gmail.com"];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "admin-login.html";
+                return;
+            }
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                const isAdmin = (userDoc.exists() && userDoc.data().role === 'admin') || ADMIN_EMAILS.includes(user.email.toLowerCase());
+                if (!isAdmin) {
+                    window.location.href = "admin-login.html";
+                } else {
+                    loadSettings();
+                }
+            } catch (err) {
+                console.error("Auth check failed:", err);
+                window.location.href = "admin-login.html";
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => { window.location.href = "admin-login.html"; });
+        });
+
+        // Settings (Payment Details)
+        const bkashInput = document.getElementById('bkashNumber');
+        const nagadInput = document.getElementById('nagadNumber');
+        const binanceInput = document.getElementById('binanceId');
+
+        async function loadSettings() {
+            try {
+                const docSnap = await getDoc(doc(db, "settings", "payment_info"));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    bkashInput.value = data.bkash || "";
+                    nagadInput.value = data.nagad || "";
+                    binanceInput.value = data.binance || "";
+                }
+            } catch (error) {
+                console.error("Error loading settings:", error);
+            }
+        }
+
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Updating...";
+
+            try {
+                await setDoc(doc(db, "settings", "payment_info"), {
+                    bkash: bkashInput.value.trim(),
+                    nagad: nagadInput.value.trim(),
+                    binance: binanceInput.value.trim()
+                }, { merge: true });
+                
+                alert("Payment configurations saved successfully!");
+            } catch (error) {
+                console.error(error);
+                alert("Error updating settings!");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Save Payment Settings";
+            }
+        });
+
+        // Real-Time Data: DEPOSITS
+        const depositTableBody = document.getElementById('depositTableBody');
+        const qDeposits = query(collection(db, "deposits"), orderBy("timestamp", "desc"));
+        
+        onSnapshot(qDeposits, (snapshot) => {
+            if (snapshot.empty) {
+                depositTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">No deposit requests found.</td></tr>`;
+                return;
+            }
+            
+            let html = "";
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const statusBadge = data.status === 'pending' ? 'pending' : (data.status === 'approved' ? 'approved' : 'rejected');
+                const currency = (data.method === 'binance') ? '$' : 'BDT ';
+                
+                html += `
+                <tr>
+                    <td>${data.userEmail || data.userId}</td>
+                    <td style="text-transform: capitalize;">${data.method}</td>
+                    <td><code>${data.transactionId}</code></td>
+                    <td><strong>${currency}${parseFloat(data.amount || 0).toFixed(2)}</strong></td>
+                    <td><span class="badge ${statusBadge}">${(data.status || 'pending').toUpperCase()}</span></td>
+                    <td>
+                        ${data.status === 'pending' ? `
+                            <button class="action-btn btn-approve deposit-action" data-action="approve" data-id="${doc.id}" data-uid="${data.userId}" data-amount="${data.amount}">Approve</button>
+                            <button class="action-btn btn-reject deposit-action" data-action="reject" data-id="${doc.id}" data-uid="${data.userId}">Reject</button>
+                        ` : `<span style="font-size:12px; color: #94a3b8;">Processed</span>`}
+                    </td>
+                </tr>`;
+            });
+            depositTableBody.innerHTML = html;
+        });
+
+        // Real-Time Data: CAMPAIGNS
+        const campaignTableBody = document.getElementById('campaignTableBody');
+        const qCampaigns = query(collection(db, "campaigns"), orderBy("timestamp", "desc"));
+        
+        onSnapshot(qCampaigns, (snapshot) => {
+            if (snapshot.empty) {
+                campaignTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">No campaign requests found.</td></tr>`;
+                return;
+            }
+            
+            let html = "";
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const statusBadge = data.status === 'pending' ? 'pending' : (data.status === 'active' ? 'active' : 'rejected');
+                const budgetAmount = data.budget ?? data.amount ?? 0;
+                const countryCount = data.targetCountries ? data.targetCountries.length : 0;
+                
+                html += `
+                <tr>
+                    <td>${data.userEmail || data.userId}</td>
+                    <td><a href="${data.url}" target="_blank" style="color: #059669; word-break: break-all;">${data.url}</a></td>
+                    <td>${countryCount} Countries</td>
+                    <td><strong>BDT ${parseFloat(budgetAmount).toFixed(2)}</strong></td>
+                    <td><span class="badge ${statusBadge}">${(data.status || 'pending').toUpperCase()}</span></td>
+                    <td>
+                        ${data.status === 'pending' ? `
+                            <button class="action-btn btn-approve campaign-action" data-action="approve" data-id="${doc.id}" data-uid="${data.userId}">Approve</button>
+                            <button class="action-btn btn-reject campaign-action" data-action="reject" data-id="${doc.id}" data-uid="${data.userId}" data-budget="${budgetAmount}">Reject</button>
+                        ` : `<span style="font-size:12px; color: #94a3b8;">Processed</span>`}
+                    </td>
+                </tr>`;
+            });
+            campaignTableBody.innerHTML = html;
+        });
+
+        // Deposit Handlers
+        depositTableBody.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.deposit-action');
+            if(!btn) return;
+            
+            const action = btn.dataset.action;
+            const docId = btn.dataset.id;
+            const userId = btn.dataset.uid;
+            const amount = parseFloat(btn.dataset.amount || 0);
+
+            if(action === 'approve') {
+                if(!confirm(`Approve deposit of BDT ${amount} and credit user balance?`)) return;
+                try {
+                    await updateDoc(doc(db, "deposits", docId), { status: "approved" });
+                    await updateDoc(doc(db, "users", userId), { balance: increment(amount) });
+                    await addDoc(collection(db, "users", userId, "notifications"), {
+                        title: "Deposit Credited 💰",
+                        message: `Your deposit of BDT ${amount.toFixed(2)} has been verified and added to your balance.`,
+                        icon: "✅",
+                        timestamp: serverTimestamp()
+                    });
+                } catch(error) { console.error(error); alert("Failed to approve deposit!"); }
+            } 
+            else if(action === 'reject') {
+                if(!confirm(`Reject this deposit transaction?`)) return;
+                try {
+                    await updateDoc(doc(db, "deposits", docId), { status: "rejected" });
+                    await addDoc(collection(db, "users", userId, "notifications"), {
+                        title: "Deposit Declined ❌",
+                        message: `Your deposit request has been declined. Please reach out to customer support with payment proof.`,
+                        icon: "❌",
+                        timestamp: serverTimestamp()
+                    });
+                } catch(error) { console.error(error); alert("Failed to decline deposit!"); }
+            }
+        });
+
+        // Campaign Handlers (With Refund)
+        campaignTableBody.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.campaign-action');
+            if(!btn) return;
+            
+            const action = btn.dataset.action;
+            const docId = btn.dataset.id;
+            const userId = btn.dataset.uid;
+            const budget = parseFloat(btn.dataset.budget || 0);
+
+            if(action === 'approve') {
+                if(!confirm(`Approve and launch this campaign?`)) return;
+                try {
+                    await updateDoc(doc(db, "campaigns", docId), { status: "active" });
+                    await addDoc(collection(db, "users", userId, "notifications"), {
+                        title: "Campaign Activated 🚀",
+                        message: `Your campaign has passed review and is now live!`,
+                        icon: "🚀",
+                        timestamp: serverTimestamp()
+                    });
+                } catch(error) { console.error(error); alert("Error approving campaign!"); }
+            } 
+            else if(action === 'reject') {
+                const reason = prompt("Enter rejection reason (User will be refunded):", "URL violates platform policies");
+                if(reason === null) return;
+
+                try {
+                    await updateDoc(doc(db, "campaigns", docId), { 
+                        status: "rejected",
+                        rejectReason: reason
+                    });
+                    
+                    if(budget > 0) {
+                        await updateDoc(doc(db, "users", userId), { 
+                            balance: increment(budget) 
+                        });
+                    }
+
+                    await addDoc(collection(db, "users", userId, "notifications"), {
+                        title: "Campaign Rejected & Refunded ⚠️",
+                        message: `Your campaign was declined (${reason}). BDT ${budget.toFixed(2)} has been refunded to your wallet balance.`,
+                        icon: "⚠️",
+                        timestamp: serverTimestamp()
+                    });
+                } catch(error) { console.error(error); alert("Error rejecting campaign!"); }
+            }
+        });
+
+        // Notification Dispatcher
+        document.getElementById('notificationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const target = document.getElementById('targetUser').value;
+            const title = document.getElementById('notifTitle').value.trim();
+            const message = document.getElementById('notifMessage').value.trim();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Dispatching...";
+
+            try {
+                if (target === 'specific') {
+                    const userId = document.getElementById('specificUserId').value.trim();
+                    if(!userId) {
+                        alert("Please provide the target User UID.");
+                        submitBtn.disabled = false; submitBtn.textContent = "Dispatch Notification"; return;
+                    }
+                    await addDoc(collection(db, "users", userId, "notifications"), {
+                        title: title, message: message, icon: "🔔", timestamp: serverTimestamp()
+                    });
+                } else {
+                    const usersSnap = await getDocs(collection(db, "users"));
+                    const promises = [];
+                    usersSnap.forEach((userDoc) => {
+                        promises.push(addDoc(collection(db, "users", userDoc.id, "notifications"), {
+                            title: title, message: message, icon: "📣", timestamp: serverTimestamp()
+                        }));
+                    });
+                    await Promise.all(promises);
+                }
+                alert("Notification broadcasted successfully!");
+                document.getElementById('notificationForm').reset();
+            } catch (error) {
+                console.error(error);
+                alert("Failed to send notification.");
+            } finally {
+                submitBtn.disabled = false; submitBtn.textContent = "Dispatch Notification";
+            }
+        });
+    </script>
+</body>
+</html>

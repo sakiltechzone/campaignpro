@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Earnings - CampaignPro</title>
+    
+    <!-- Telegram Web App Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: Arial, "Segoe UI", sans-serif;
+            background: #f5f7fb; color: #172033; min-height: 100vh;
+        }
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: 250px; height: 100vh;
+            background: #111827; color: #ffffff; padding: 22px 15px;
+            overflow-y: auto; z-index: 1000; transition: transform .25s ease;
+            display: flex; flex-direction: column;
+        }
+        .brand {
+            padding: 5px 12px 25px; border-bottom: 1px solid #263142; margin-bottom: 20px;
+        }
+        .brand-name { font-size: 23px; font-weight: 800; letter-spacing: -.3px; }
+        .brand-name span { color: #10b981; }
+        .brand-subtitle { color: #94a3b8; font-size: 11px; margin-top: 5px; }
+        
+        .menu-title {
+            color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase;
+            padding: 0 12px; margin-bottom: 8px; letter-spacing: .5px;
+        }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 4px; }
+        .sidebar-menu a {
+            display: flex; align-items: center; gap: 11px; padding: 11px 12px;
+            color: #cbd5e1; text-decoration: none; border-radius: 9px;
+            font-size: 14px; font-weight: 600; transition: background .2s, color .2s, transform .2s;
+        }
+        .sidebar-menu a:hover { background: #1f2937; color: #ffffff; transform: translateX(2px); }
+        .sidebar-menu a.active {
+            background: #059669; color: #ffffff; box-shadow: 0 4px 12px rgba(5, 150, 105, .18);
+        }
+        .menu-icon { width: 22px; min-width: 22px; text-align: center; font-size: 16px; }
+        .sidebar-bottom { margin-top: auto; padding-top: 15px; }
+        .help-link {
+            display: flex; align-items: center; gap: 11px; padding: 11px 12px;
+            color: #cbd5e1; text-decoration: none; border-radius: 9px;
+            font-size: 14px; font-weight: 600; transition: background .2s, color .2s, transform .2s;
+        }
+        .help-link:hover { background: #1f2937; color: #ffffff; transform: translateX(2px); }
+        
+        /* LOGOUT BUTTON */
+        .logout-button {
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+            width: 100%; margin-top: 10px; padding: 11px 13px; border-radius: 9px;
+            color: #cbd5e1; background: rgba(255, 255, 255, .035);
+            border: 1px solid rgba(255, 255, 255, .07); box-shadow: 0 3px 10px rgba(0, 0, 0, .10);
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: background .2s, color .2s, border-color .2s, transform .2s, box-shadow .2s;
+        }
+        .logout-button:hover {
+            background: rgba(239, 68, 68, .12); color: #fca5a5;
+            border-color: rgba(239, 68, 68, .20); transform: translateY(-1px);
+        }
+
+        /* =====================================================
+           MOBILE TOPBAR & OVERLAY
+        ===================================================== */
+        .mobile-topbar {
+            display: none; position: fixed; top: 0; left: 0; right: 0; height: 62px;
+            background: #111827; color: #ffffff; align-items: center;
+            justify-content: space-between; padding: 0 16px; z-index: 900;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, .15);
+        }
+        .mobile-brand { font-size: 20px; font-weight: 800; }
+        .mobile-brand span { color: #10b981; }
+        .menu-button {
+            border: none; background: #1f2937; color: #ffffff; width: 40px; height: 40px;
+            border-radius: 8px; font-size: 20px; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+        }
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 950;
+        }
+
+        /* =====================================================
+           MAIN CONTENT
+        ===================================================== */
+        .main-content { margin-left: 250px; min-height: 100vh; padding: 30px; }
+        .page { width: 100%; max-width: 1250px; margin: 0 auto; }
+        
+        .header-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 25px; flex-wrap: wrap; gap: 15px;
+        }
+        .header-bar h1 { font-size: 28px; font-weight: 800; color: #111827; }
+        .header-bar p { color: #64748b; font-size: 14px; margin-top: 4px; }
+
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #059669; color: #ffffff; border: none; padding: 10px 18px;
+            border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer;
+            transition: .2s;
+        }
+        .btn-primary:hover { background: #047857; }
+
+        .btn-refresh {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #ffffff; color: #111827; border: 1px solid #dbe1ea;
+            padding: 10px 16px; border-radius: 9px; font-size: 14px;
+            font-weight: 700; cursor: pointer; transition: .2s;
+        }
+        .btn-refresh:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+        /* =====================================================
+           EARNING STATS OVERVIEW
+        ===================================================== */
+        .account-selector-bar {
+            background: #ffffff; border: 1px solid #e8edf3; border-radius: 14px;
+            padding: 16px 20px; margin-bottom: 20px; display: flex;
+            align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+        }
+        .account-info { display: flex; align-items: center; gap: 12px; }
+        .acc-avatar {
+            width: 44px; height: 44px; background: #111827; color: #10b981;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; font-size: 20px; font-weight: 800;
+        }
+        .acc-details h3 { font-size: 16px; color: #111827; }
+        .acc-details span { font-size: 12px; color: #64748b; }
+        
+        .filter-controls { display: flex; gap: 10px; align-items: center; }
+        .custom-select, .date-input {
+            padding: 9px 12px; border: 1px solid #dbe1ea; border-radius: 8px;
+            font-size: 14px; outline: none; background: #ffffff; color: #172033;
+        }
+
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #ffffff; border: 1px solid #e8edf3; border-radius: 14px;
+            padding: 20px; box-shadow: 0 4px 15px rgba(15, 23, 42, .03);
+        }
+        .stat-card .label { font-size: 13px; color: #64748b; margin-bottom: 8px; font-weight: 600; }
+        .stat-card .val { font-size: 26px; font-weight: 800; }
+        .c-green { color: #059669; }
+        .c-blue { color: #2563eb; }
+        .c-amber { color: #d97706; }
+        .c-purple { color: #7c3aed; }
+
+        /* =====================================================
+           COUNTRY BREAKDOWN LIST
+        ===================================================== */
+        .section-card {
+            background: #ffffff; border: 1px solid #e8edf3; border-radius: 14px;
+            overflow: hidden; margin-bottom: 25px;
+        }
+        .section-header {
+            padding: 16px 20px; border-bottom: 1px solid #edf0f4;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .section-header h2 { font-size: 16px; font-weight: 700; }
+
+        .country-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px; padding: 20px;
+        }
+        .country-card {
+            border: 1px solid #e8edf3; border-radius: 12px; padding: 15px;
+            background: #fafbfc; transition: .2s;
+        }
+        .country-card:hover { border-color: #059669; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,.04); }
+        .country-head {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0;
+        }
+        .country-name { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+        .flag-icon { font-size: 18px; }
+        .data-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+        .data-row span:first-child { color: #64748b; }
+        .data-row span:last-child { font-weight: 700; }
+
+        /* =====================================================
+           MODAL (ADD TOKEN & ACCOUNTS)
+        ===================================================== */
+        .modal {
+            display: none; position: fixed; inset: 0; background: rgba(17, 24, 39, .7);
+            z-index: 2000; align-items: center; justify-content: center; padding: 15px;
+        }
+        .modal.active { display: flex; }
+        .modal-card {
+            background: #ffffff; width: 100%; max-width: 520px; border-radius: 16px;
+            padding: 26px; max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px;
+        }
+        .modal-header h2 { font-size: 19px; font-weight: 800; color: #111827; }
+        .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; }
+
+        .instruction-box {
+            background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+            padding: 12px 14px; margin-bottom: 18px; font-size: 12px; line-height: 1.6; color: #166534;
+        }
+        .instruction-box strong { color: #14532d; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #374151; }
+        .form-group input {
+            width: 100%; padding: 11px 13px; border: 1px solid #dbe1ea;
+            border-radius: 8px; font-size: 14px; outline: none;
+        }
+        .form-group input:focus { border-color: #059669; }
+
+        .accounts-list-wrap { margin-top: 20px; border-top: 1px solid #edf0f4; padding-top: 15px; }
+        .saved-account-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 12px; border: 1px solid #e8edf3; border-radius: 8px;
+            margin-bottom: 8px; font-size: 13px;
+        }
+        .btn-delete {
+            background: #fee2e2; border: none; color: #dc2626; padding: 5px 9px;
+            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1000px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 700px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; }
+            .mobile-topbar { display: flex; }
+            .main-content { margin-left: 0; padding: 80px 15px 25px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .account-selector-bar { flex-direction: column; align-items: flex-start; }
+            .filter-controls { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="brand">
+        <div class="brand-name">Campaign<span>Pro</span></div>
+        <div class="brand-subtitle">Smart Campaign Management</div>
+    </div>
+    <div class="menu-title">Main Menu</div>
+    <ul class="sidebar-menu">
+        <li><a href="dashboard.html"><span class="menu-icon">🏠</span><span>Dashboard</span></a></li>
+        <li><a href="campaign.html"><span class="menu-icon">📢</span><span>Create Campaign</span></a></li>
+        <li><a href="deposit.html"><span class="menu-icon">💳</span><span>Deposit</span></a></li>
+        <li><a href="campaigns.html"><span class="menu-icon">📊</span><span>My Campaigns</span></a></li>
+        <li><a href="earnings.html" class="active"><span class="menu-icon">💰</span><span>Check Earnings</span></a></li>
+        <li><a href="notifications.html"><span class="menu-icon">🔔</span><span>Notifications</span></a></li>
+        <li><a href="help.html" class="help-link"><span class="menu-icon">❓</span><span>Help & Support</span></a></li>
+    </ul>
+    
+    <div class="sidebar-bottom">
+        <button type="button" class="logout-button" id="logoutButton">
+            <span>🚪</span>
+            <span>Logout</span>
+        </button>
+    </div>
+</aside>
+
+<!-- MOBILE TOPBAR & OVERLAY -->
+<div class="mobile-topbar">
+    <div class="mobile-brand">Campaign<span>Pro</span></div>
+    <button class="menu-button" id="menuButton" type="button">☰</button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+<div class="page">
+
+    <div class="header-bar">
+        <div>
+            <h1>Adsterra Earnings</h1>
+            <p>Real-time analytics, revenue, eCPM, and country breakdowns.</p>
+        </div>
+        
+        <div class="header-actions">
+            <button class="btn-primary" id="openModalBtn">
+                <span>➕</span> Connect Account
+            </button>
+            <button class="btn-refresh" id="refreshBtn">
+                <span id="refreshIcon">🔄</span> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- ACTIVE ACCOUNT BAR -->
+    <div class="account-selector-bar">
+        <div class="account-info">
+            <div class="acc-avatar">A</div>
+            <div class="acc-details">
+                <h3 id="currentAccountName">No Account Selected</h3>
+                <span id="tokenStatus">Please connect an Adsterra Account</span>
+            </div>
+        </div>
+
+        <div class="filter-controls">
+            <select class="custom-select" id="accountDropdown">
+                <option value="">Select Account</option>
+            </select>
+            <input type="date" class="date-input" id="statsDate">
+        </div>
+    </div>
+
+    <!-- STATS OVERVIEW -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">Est. Revenue</div>
+            <div class="val c-green" id="statRevenue">$0.000</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Total Impressions</div>
+            <div class="val c-blue" id="statImpressions">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Average eCPM</div>
+            <div class="val c-amber" id="statEcpm">$0.000</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Clicks / CTR</div>
+            <div class="val c-purple" id="statClicksCtr">0 / 0%</div>
+        </div>
+    </div>
+
+    <!-- COUNTRY-WISE BREAKDOWN -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2>Country Performance Breakdown</h2>
+            <span style="font-size: 13px; color: #64748b;" id="countryCount">0 Countries</span>
+        </div>
+
+        <div class="country-grid" id="countryContainer">
+            <div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 40px;">
+                Connect your Adsterra API Token to fetch live statistics.
+            </div>
+        </div>
+    </div>
+
+</div>
+</main>
+
+<!-- MODAL: ADD / MANAGE ADSTERRA ACCOUNTS -->
+<div class="modal" id="accountModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>Connect Adsterra Account</h2>
+            <button class="close-btn" id="closeModalBtn">&times;</button>
+        </div>
+
+        <div class="instruction-box">
+            <strong>How to get your API Token:</strong><br>
+            Settings &gt;&gt; API Section &gt;&gt; Generate API Token &gt;&gt; Copy &amp; Paste below.
+        </div>
+
+        <form id="tokenForm">
+            <div class="form-group">
+                <label for="accName">Account Name / Label</label>
+                <input type="text" id="accName" placeholder="e.g. My Website Account" required>
+            </div>
+
+            <div class="form-group">
+                <label for="accToken">Adsterra API Token</label>
+                <input type="text" id="accToken" placeholder="Paste your Adsterra API token here" required>
+            </div>
+
+            <button type="submit" id="saveTokenBtn" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                Save & Connect
+            </button>
+        </form>
+
+        <div class="accounts-list-wrap">
+            <h4 style="font-size: 14px; margin-bottom: 10px; color: #111827;">Connected Accounts</h4>
+            <div id="savedAccountsContainer"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* SIDEBAR NAVIGATION */
+    const sidebar = document.getElementById("sidebar");
+    const menuButton = document.getElementById("menuButton");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+    function openSidebar() { sidebar.classList.add("open"); sidebarOverlay.classList.add("show"); menuButton.textContent = "✕"; }
+    function closeSidebar() { sidebar.classList.remove("open"); sidebarOverlay.classList.remove("show"); menuButton.textContent = "☰"; }
+    menuButton.addEventListener("click", () => sidebar.classList.contains("open") ? closeSidebar() : openSidebar());
+    sidebarOverlay.addEventListener("click", closeSidebar);
+
+    // Default to today's date
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('statsDate').value = today;
+</script>
+
+<!-- FIREBASE & CLOUDFLARE WORKER INTEGRATION -->
+<script type="module">
+    import { checkAuthStatus, logoutUser, auth, db } from './firebase.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, getDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    checkAuthStatus();
+
+    let currentUser = null;
+    let savedAccounts = [];
+
+    const accountModal = document.getElementById("accountModal");
+    document.getElementById("openModalBtn").addEventListener("click", () => accountModal.classList.add("active"));
+    document.getElementById("closeModalBtn").addEventListener("click", () => accountModal.classList.remove("active"));
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            await loadAdsterraAccounts();
+        } else {
+            currentUser = null;
+        }
+    });
+
+    async function loadAdsterraAccounts() {
+        if (!currentUser) return;
+        try {
+            const userRef = doc(db, "users", currentUser.uid);
+            const userDoc = await getDoc(userRef);
+            if (userDoc.exists() && userDoc.data().adsterra_tokens) {
+                savedAccounts = userDoc.data().adsterra_tokens || [];
+            } else {
+                savedAccounts = [];
+            }
+            renderAccountDropdown();
+            renderSavedAccountsModal();
+        } catch (err) {
+            console.error("Error loading accounts:", err);
+        }
+    }
+
+    function renderAccountDropdown() {
+        const dropdown = document.getElementById("accountDropdown");
+        dropdown.innerHTML = '<option value="">Select Account</option>';
+        savedAccounts.forEach((acc, index) => {
+            const opt = document.createElement("option");
+            opt.value = index;
+            opt.textContent = acc.name;
+            dropdown.appendChild(opt);
+        });
+
+        if (savedAccounts.length > 0) {
+            dropdown.selectedIndex = 1;
+            switchAccount(0);
+        } else {
+            document.getElementById("currentAccountName").innerText = "No Account Selected";
+            document.getElementById("tokenStatus").innerText = "Please connect an Adsterra Account";
+        }
+    }
+
+    function renderSavedAccountsModal() {
+        const container = document.getElementById("savedAccountsContainer");
+        container.innerHTML = "";
+        if (savedAccounts.length === 0) {
+            container.innerHTML = "<p style='font-size:12px;color:#94a3b8;'>No accounts connected yet.</p>";
+            return;
+        }
+
+        savedAccounts.forEach((acc, index) => {
+            const item = document.createElement("div");
+            item.className = "saved-account-item";
+            item.innerHTML = `
+                <div>
+                    <strong>${acc.name}</strong><br>
+                    <span style="color:#64748b;font-size:11px;">Token: ${acc.token ? acc.token.substring(0, 10) + '...' : 'N/A'}</span>
+                </div>
+                <button class="btn-delete" data-index="${index}">Delete</button>
+            `;
+            container.appendChild(item);
+        });
+
+        container.querySelectorAll(".btn-delete").forEach(btn => {
+            btn.addEventListener("click", async (e) => {
+                const idx = e.target.getAttribute("data-index");
+                await deleteAccount(savedAccounts[idx]);
+            });
+        });
+    }
+
+    document.getElementById("tokenForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!currentUser) {
+            alert("User authentication in progress, please try again in a few seconds.");
+            return;
+        }
+
+        const nameInput = document.getElementById("accName");
+        const tokenInput = document.getElementById("accToken");
+        const saveBtn = document.getElementById("saveTokenBtn");
+
+        const name = nameInput.value.trim();
+        const token = tokenInput.value.trim();
+
+        if (!name || !token) return;
+
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Saving...";
+
+        try {
+            const userRef = doc(db, "users", currentUser.uid);
+            const newAccount = { name, token, created_at: new Date().toISOString() };
+
+            await setDoc(userRef, {
+                adsterra_tokens: arrayUnion(newAccount)
+            }, { merge: true });
+
+            nameInput.value = "";
+            tokenInput.value = "";
+            accountModal.classList.remove("active");
+            
+            await loadAdsterraAccounts();
+            alert("Account connected successfully!");
+        } catch (error) {
+            console.error("Firestore Save Error:", error);
+            alert("Save failed: " + error.message);
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerText = "Save & Connect";
+        }
+    });
+
+    async function deleteAccount(acc) {
+        if (!confirm(`Delete account "${acc.name}"?`)) return;
+        try {
+            const userRef = doc(db, "users", currentUser.uid);
+            await setDoc(userRef, {
+                adsterra_tokens: arrayRemove(acc)
+            }, { merge: true });
+            await loadAdsterraAccounts();
+        } catch (error) {
+            console.error("Failed to delete account:", error);
+        }
+    }
+
+    document.getElementById("accountDropdown").addEventListener("change", (e) => {
+        const val = e.target.value;
+        if (val !== "") switchAccount(Number(val));
+    });
+
+    document.getElementById("statsDate").addEventListener("change", () => {
+        const idx = document.getElementById("accountDropdown").value;
+        if (idx !== "") switchAccount(Number(idx));
+    });
+
+    function switchAccount(index) {
+        const acc = savedAccounts[index];
+        if (!acc) return;
+        document.getElementById("currentAccountName").innerText = acc.name;
+        document.getElementById("tokenStatus").innerText = "Token Active";
+        fetchAdsterraData(acc.token);
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+        const idx = document.getElementById("accountDropdown").value;
+        if (idx !== "") {
+            switchAccount(Number(idx));
+        } else {
+            alert("Please select or connect an account first.");
+        }
+    });
+
+    /* =====================================================
+       CLOUDFLARE WORKER POWERED ADSTERRA FETCHER
+    ===================================================== */
+    async function fetchAdsterraData(apiToken) {
+        const selectedDate = document.getElementById("statsDate").value;
+        const countryContainer = document.getElementById("countryContainer");
+        const refreshIcon = document.getElementById("refreshIcon");
+        
+        refreshIcon.innerText = "⏳";
+        countryContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 35px;">Fetching live statistics...</div>';
+
+        // আপনার ক্লাউডফ্লেয়ার ওয়ার্কারের লিঙ্ক
+        const workerUrl = `https://adsterra-proxy.rough-voice-dbce.workers.dev?date=${selectedDate}`;
+
+        try {
+            const response = await fetch(workerUrl, {
+                headers: {
+                    'X-API-Key': apiToken
+                }
+            });
+
+            const result = await response.json();
+            refreshIcon.innerText = "🔄";
+
+            if (result && result.items && result.items.length > 0) {
+                renderStatistics(result.items);
+            } else if (Array.isArray(result) && result.length > 0) {
+                renderStatistics(result);
+            } else {
+                countryContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; color: #ef4444; padding: 30px;">
+                        No impression or data recorded for this date.
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            refreshIcon.innerText = "🔄";
+            countryContainer.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; color: #ef4444; padding: 30px;">
+                    Failed to fetch data. Please check your API token or connection.
+                </div>
+            `;
+        }
+    }
+
+    function getCountryFlag(countryCode) {
+        if (!countryCode || countryCode.length !== 2) return "🌐";
+        const code = countryCode.toUpperCase();
+        return String.fromCodePoint(...[...code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+    }
+
+    /* =====================================================
+       STATISTICS RENDER LOGIC (FIXED IMPRESSIONS & CPM)
+    ===================================================== */
+    function renderStatistics(items) {
+        let totalRevenue = 0;
+        let totalImpressions = 0;
+        let totalClicks = 0;
+
+        items.sort((a, b) => parseFloat(b.revenue || 0) - parseFloat(a.revenue || 0));
+
+        const countryContainer = document.getElementById("countryContainer");
+        countryContainer.innerHTML = "";
+
+        items.forEach(row => {
+            const rev = parseFloat(row.revenue || 0);
+            
+            // Adsterra API ফিল্ডের ভিন্নতার জন্য সম্পূর্ণ সেফ পার্সিং
+            const imp = Math.round(parseFloat(row.impressions ?? row.impression ?? row.views ?? 0));
+            const clk = parseInt(row.clicks ?? row.click ?? 0);
+            const cpm = parseFloat(row.cpm ?? (imp > 0 ? (rev / imp) * 1000 : 0));
+            const ctr = parseFloat(row.ctr ?? (imp > 0 ? (clk / imp) * 100 : 0));
+
+            totalRevenue += rev;
+            totalImpressions += imp;
+            totalClicks += clk;
+
+            const cCode = row.country ? row.country.trim().toUpperCase() : "UNKNOWN";
+            const flag = getCountryFlag(cCode);
+
+            const card = document.createElement("div");
+            card.className = "country-card";
+            card.innerHTML = `
+                <div class="country-head">
+                    <div class="country-name">
+                        <span class="flag-icon">${flag}</span> ${cCode}
+                    </div>
+                    <span style="font-size:13px;font-weight:800;color:#059669;">$${rev.toFixed(3)}</span>
+                </div>
+                <div class="data-row"><span>Impressions:</span><span>${imp.toLocaleString()}</span></div>
+                <div class="data-row"><span>eCPM:</span><span>$${cpm.toFixed(3)}</span></div>
+                <div class="data-row"><span>Clicks:</span><span>${clk}</span></div>
+                <div class="data-row"><span>CTR:</span><span>${ctr.toFixed(2)}%</span></div>
+            `;
+            countryContainer.appendChild(card);
+        });
+
+        const overallEcpm = totalImpressions > 0 ? (totalRevenue / totalImpressions) * 1000 : 0;
+        const overallCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : 0;
+
+        document.getElementById("statRevenue").innerText = `$${totalRevenue.toFixed(3)}`;
+        document.getElementById("statImpressions").innerText = totalImpressions.toLocaleString();
+        document.getElementById("statEcpm").innerText = `$${overallEcpm.toFixed(3)}`;
+        document.getElementById("statClicksCtr").innerText = `${totalClicks} / ${overallCtr}%`;
+        document.getElementById("countryCount").innerText = `${items.length} Countries`;
+    }
+
+    document.getElementById("logoutButton").addEventListener("click", () => {
+        if (confirm("Are you sure you want to log out?")) logoutUser();
+    });
+</script>
+
+</body>
+</html>

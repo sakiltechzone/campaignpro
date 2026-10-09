@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sign Up - CampaignPro</title>
+
+    <!-- Telegram Web App Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+        }
+
+        .signup-wrapper {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        /* BRAND */
+
+        .brand {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .brand-name {
+            font-size: 29px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .brand-name span {
+            color: #059669;
+        }
+
+        /* CARD */
+
+        .signup-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 30px 26px;
+
+            box-shadow:
+                0 10px 35px rgba(15, 23, 42, 0.08);
+        }
+
+        .signup-card h1 {
+            font-size: 25px;
+            margin-bottom: 7px;
+        }
+
+        .signup-subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* FORM */
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        .form-group label {
+            display: block;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            margin-bottom: 7px;
+        }
+
+        .form-group input {
+            width: 100%;
+
+            padding: 13px 14px;
+
+            border: 1px solid #dbe1ea;
+            border-radius: 9px;
+
+            background: #ffffff;
+
+            font-size: 15px;
+
+            outline: none;
+
+            transition: .2s;
+        }
+
+        .form-group input:focus {
+            border-color: #059669;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(5, 150, 105, .10);
+        }
+
+        /* BUTTON */
+
+        .signup-btn {
+            width: 100%;
+
+            border: none;
+            border-radius: 9px;
+
+            padding: 13px;
+
+            background: #059669;
+            color: #ffffff;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: .2s;
+        }
+
+        .signup-btn:hover {
+            background: #047857;
+        }
+
+        .signup-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        /* MESSAGE */
+
+        .message {
+            display: none;
+
+            padding: 11px 13px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+
+            margin-bottom: 17px;
+
+            line-height: 1.5;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* LOGIN LINK */
+
+        .login-link {
+            text-align: center;
+
+            margin-top: 22px;
+
+            font-size: 14px;
+
+            color: #64748b;
+        }
+
+        .login-link a {
+            color: #059669;
+
+            font-weight: 700;
+
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* HOME */
+
+        .back-home {
+            display: block;
+
+            text-align: center;
+
+            margin-top: 18px;
+
+            color: #64748b;
+
+            font-size: 13px;
+
+            text-decoration: none;
+        }
+
+        .back-home:hover {
+            color: #059669;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 480px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .signup-card {
+                padding: 25px 20px;
+            }
+
+            .brand-name {
+                font-size: 26px;
+            }
+
+            .signup-card h1 {
+                font-size: 23px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="signup-wrapper">
+
+    <!-- BRAND -->
+    <div class="brand">
+        <div class="brand-name">
+            Campaign<span>Pro</span>
+        </div>
+    </div>
+
+
+    <!-- SIGN UP CARD -->
+    <div class="signup-card">
+
+        <h1>Create a New Account</h1>
+        <p class="signup-subtitle">Create your CampaignPro account</p>
+
+        <!-- ERROR -->
+        <div id="errorMessage" class="message error"></div>
+
+        <!-- SUCCESS -->
+        <div id="successMessage" class="message success"></div>
+
+        <!-- FORM -->
+        <form id="signupForm">
+
+            <!-- NAME -->
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter your full name" autocomplete="name" required>
+            </div>
+
+            <!-- EMAIL -->
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="example@email.com" autocomplete="email" required>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Password" autocomplete="new-password" minlength="6" required>
+            </div>
+
+            <!-- CONFIRM PASSWORD -->
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" autocomplete="new-password" minlength="6" required>
+            </div>
+
+            <!-- BUTTON -->
+            <button type="submit" class="signup-btn" id="signupButton">
+                Sign Up
+            </button>
+
+        </form>
+
+        <!-- LOGIN -->
+        <div class="login-link">
+            Already have an account?
+            <a href="login.html">Log In</a>
+        </div>
+
+        <!-- HOME -->
+        <a href="index.html" class="back-home">← Home</a>
+
+    </div>
+
+</div>
+
+<!-- FIREBASE SCRIPT -->
+<script type="module">
+    import { auth, db, checkAuthStatus } from './firebase.js';
+    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Check if user is already authenticated on page load
+    checkAuthStatus();
+
+    const signupForm = document.getElementById("signupForm");
+    const signupButton = document.getElementById("signupButton");
+    const errorMessage = document.getElementById("errorMessage");
+    const successMessage = document.getElementById("successMessage");
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = "block";
+        successMessage.style.display = "none";
+    }
+
+    function showSuccess(message) {
+        successMessage.textContent = message;
+        successMessage.style.display = "block";
+        errorMessage.style.display = "none";
+    }
+
+    signupForm.addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        errorMessage.style.display = "none";
+        successMessage.style.display = "none";
+
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        /* VALIDATION */
+        if (!name || !email) {
+            showError("Please enter your name and email correctly.");
+            return;
+        }
+        if (password.length < 6) {
+            showError("Password must be at least 6 characters long.");
+            return;
+        }
+        if (password !== confirmPassword) {
+            showError("Passwords do not match.");
+            return;
+        }
+
+        /* BUTTON STATE */
+        signupButton.disabled = true;
+        signupButton.textContent = "Creating account...";
+
+        try {
+            // 1. Create user with Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // 2. Save user profile in Firestore database (default balance: 0)
+            await setDoc(doc(db, "users", user.uid), {
+                name: name,
+                email: email,
+                role: "user",
+                balance: 0,
+                joined_at: new Date()
+            });
+
+            showSuccess("Account created successfully! Redirecting to dashboard...");
+            
+            // 3. Redirect to dashboard on success
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1200);
+
+        } catch (error) {
+            console.error("Signup Error:", error);
+            if (error.code === 'auth/email-already-in-use') {
+                showError("This email is already registered.");
+            } else if (error.code === 'auth/invalid-email') {
+                showError("Invalid email address.");
+            } else {
+                showError("Something went wrong. Please try again.");
+            }
+            
+            signupButton.disabled = false;
+            signupButton.textContent = "Sign Up";
+        }
+    });
+</script>
+
+</body>
+
+</html>

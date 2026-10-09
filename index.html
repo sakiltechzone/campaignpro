@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CampaignPro - Smart Campaign Management</title>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family:
+                Arial,
+                sans-serif;
+
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================= */
+
+        .sidebar {
+
+            position: fixed;
+
+            left: 0;
+            top: 0;
+
+            width: 250px;
+            height: 100vh;
+
+            background: #111827;
+
+            color: white;
+
+            padding: 24px 16px;
+
+            z-index: 1000;
+
+            transform: translateX(-100%);
+
+            transition: .3s;
+        }
+
+        /* Show sidebar when user is logged in */
+
+        body.logged-in .sidebar {
+            transform: translateX(0);
+        }
+
+        .logo {
+
+            padding: 5px 12px 30px;
+
+            font-size: 24px;
+
+            font-weight: 700;
+        }
+
+        .logo span {
+            color: #34d399;
+        }
+
+        .menu-title {
+
+            font-size: 11px;
+
+            color: #94a3b8;
+
+            text-transform: uppercase;
+
+            padding: 0 12px;
+
+            margin-bottom: 10px;
+        }
+
+        .menu {
+
+            list-style: none;
+        }
+
+        .menu li {
+
+            margin-bottom: 5px;
+        }
+
+        .menu a {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 12px;
+
+            border-radius: 9px;
+
+            color: #cbd5e1;
+
+            text-decoration: none;
+
+            font-size: 14px;
+
+            transition: .2s;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+
+            background: #1f2937;
+
+            color: white;
+        }
+
+        .menu-icon {
+
+            width: 22px;
+
+            text-align: center;
+
+            font-size: 17px;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .main {
+
+            min-height: 100vh;
+
+            transition: .3s;
+        }
+
+        body.logged-in .main {
+
+            margin-left: 250px;
+        }
+
+        /* =========================
+           TOPBAR
+        ========================= */
+
+        .topbar {
+
+            height: 72px;
+
+            background: white;
+
+            border-bottom:
+                1px solid #e5e7eb;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 35px;
+        }
+
+        .page-title {
+
+            font-size: 18px;
+
+            font-weight: 600;
+        }
+
+        .top-logo {
+
+            display: none;
+
+            font-size: 21px;
+
+            font-weight: 700;
+        }
+
+        .top-logo span {
+            color: #059669;
+        }
+
+        .auth-buttons {
+
+            display: flex;
+
+            gap: 8px;
+        }
+
+        .auth-btn {
+
+            text-decoration: none;
+
+            padding: 9px 15px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+        .login-btn {
+
+            color: #374151;
+
+            border:
+                1px solid #d1d5db;
+
+            background: white;
+        }
+
+        .signup-btn {
+
+            color: white;
+
+            background: #059669;
+        }
+
+        /* Hide Auth Buttons when logged in */
+
+        body.logged-in .auth-buttons {
+
+            display: none;
+        }
+
+        /* =========================
+           MOBILE MENU
+        ========================= */
+
+        .mobile-menu-btn {
+
+            display: none;
+
+            border: 0;
+
+            background: none;
+
+            font-size: 24px;
+
+            cursor: pointer;
+        }
+
+        /* =========================
+           CONTENT
+        ========================= */
+
+        .content {
+
+            max-width: 1150px;
+
+            margin: auto;
+
+            padding: 35px;
+        }
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #111827,
+                    #172554
+                );
+
+            border-radius: 20px;
+
+            padding: 48px;
+
+            color: white;
+
+            position: relative;
+
+            overflow: hidden;
+        }
+
+        .hero::after {
+
+            content: "";
+
+            position: absolute;
+
+            width: 280px;
+            height: 280px;
+
+            right: -100px;
+            top: -100px;
+
+            background: #10b981;
+
+            opacity: .10;
+
+            border-radius: 50%;
+        }
+
+        .hero-label {
+
+            color: #6ee7b7;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            margin-bottom: 14px;
+        }
+
+        .hero h1 {
+
+            max-width: 700px;
+
+            font-size: 38px;
+
+            line-height: 1.25;
+
+            margin-bottom: 17px;
+        }
+
+        .hero h1 span {
+
+            color: #34d399;
+        }
+
+        .hero p {
+
+            max-width: 680px;
+
+            color: #cbd5e1;
+
+            font-size: 16px;
+
+            line-height: 1.8;
+
+            margin-bottom: 27px;
+        }
+
+        .primary-btn {
+
+            display: inline-block;
+
+            padding: 13px 20px;
+
+            background: #059669;
+
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 9px;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            transition: .2s;
+        }
+
+        .primary-btn:hover {
+
+            background: #047857;
+
+            transform: translateY(-1px);
+        }
+
+        .secondary-btn {
+
+            display: inline-block;
+
+            padding: 13px 20px;
+
+            margin-left: 7px;
+
+            background:
+                rgba(255,255,255,.08);
+
+            color: white;
+
+            text-decoration: none;
+
+            border:
+                1px solid
+                rgba(255,255,255,.15);
+
+            border-radius: 9px;
+
+            font-size: 14px;
+
+            font-weight: 600;
+        }
+
+        /* =========================
+           SECTION
+        ========================= */
+
+        .section {
+
+            margin-top: 35px;
+        }
+
+        .section-heading {
+
+            margin-bottom: 18px;
+        }
+
+        .section-heading h2 {
+
+            font-size: 23px;
+
+            margin-bottom: 7px;
+        }
+
+        .section-heading p {
+
+            color: #64748b;
+
+            font-size: 14px;
+        }
+
+        /* =========================
+           CAMPAIGN CARDS
+        ========================= */
+
+        .cards {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+        }
+
+        .card {
+
+            background: white;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 15px;
+
+            padding: 23px;
+
+            transition: .2s;
+        }
+
+        .card:hover {
+
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 10px 25px
+                rgba(15,23,42,.07);
+        }
+
+        .card-icon {
+
+            font-size: 25px;
+
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+
+            font-size: 18px;
+
+            margin-bottom: 9px;
+        }
+
+        .price {
+
+            font-size: 27px;
+
+            font-weight: 700;
+
+            margin: 12px 0;
+
+            color: #111827;
+        }
+
+        .card p {
+
+            color: #64748b;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+        .limit {
+
+            margin-top: 15px;
+
+            padding-top: 13px;
+
+            border-top:
+                1px solid #edf0f3;
+
+            color: #374151;
+
+            font-size: 13px;
+        }
+
+        /* =========================
+           HOW IT WORKS
+        ========================= */
+
+        .steps {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+        }
+
+        .step {
+
+            background: white;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 14px;
+
+            padding: 22px;
+        }
+
+        .step-number {
+
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background: #ecfdf5;
+
+            color: #047857;
+
+            border-radius: 50%;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            margin-bottom: 14px;
+        }
+
+        .step h3 {
+
+            font-size: 16px;
+
+            margin-bottom: 8px;
+        }
+
+        .step p {
+
+            color: #64748b;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+
+            margin-top: 50px;
+
+            padding: 25px;
+
+            text-align: center;
+
+            color: #94a3b8;
+
+            font-size: 12px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media(max-width: 800px) {
+
+            .sidebar {
+
+                transform:
+                    translateX(-100%);
+            }
+
+            body.logged-in .sidebar {
+
+                transform:
+                    translateX(-100%);
+            }
+
+            body.logged-in .sidebar.open {
+
+                transform:
+                    translateX(0);
+            }
+
+            .main {
+
+                margin-left: 0 !important;
+            }
+
+            .topbar {
+
+                padding: 0 18px;
+            }
+
+            .mobile-menu-btn {
+
+                display: block;
+            }
+
+            .page-title {
+
+                display: none;
+            }
+
+            .top-logo {
+
+                display: block;
+            }
+
+            .content {
+
+                padding: 20px 15px;
+            }
+
+            .hero {
+
+                padding: 32px 24px;
+            }
+
+            .hero h1 {
+
+                font-size: 29px;
+            }
+
+            .hero p {
+
+                font-size: 14px;
+            }
+
+            .cards,
+            .steps {
+
+                grid-template-columns: 1fr;
+            }
+
+            .secondary-btn {
+
+                margin-left: 0;
+
+                margin-top: 8px;
+            }
+
+            .auth-btn {
+
+                padding: 8px 10px;
+
+                font-size: 12px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<aside
+    class="sidebar"
+    id="sidebar"
+>
+
+    <div class="logo">
+        Campaign<span>Pro</span>
+    </div>
+
+    <div class="menu-title">
+        Main Menu
+    </div>
+
+    <ul class="menu">
+
+        <li>
+            <a
+                href="index.html"
+                class="active"
+            >
+                <span class="menu-icon">
+                    🏠
+                </span>
+
+                Home
+            </a>
+        </li>
+
+        <li>
+            <a href="campaign.html">
+
+                <span class="menu-icon">
+                    🚀
+                </span>
+
+                Campaign
+            </a>
+        </li>
+
+        <li>
+            <a href="deposit.html">
+
+                <span class="menu-icon">
+                    💳
+                </span>
+
+                Deposit
+            </a>
+        </li>
+
+        <li>
+            <a href="earnings.html">
+
+                <span class="menu-icon">
+                    💰
+                </span>
+
+                Check Earnings
+            </a>
+        </li>
+
+        <li>
+            <a href="notifications.html">
+
+                <span class="menu-icon">
+                    🔔
+                </span>
+
+                Notifications
+            </a>
+        </li>
+
+        <li>
+            <a href="help.html">
+
+                <span class="menu-icon">
+                    🆘
+                </span>
+
+                Help Line
+            </a>
+        </li>
+
+    </ul>
+
+</aside>
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="main">
+
+
+    <!-- TOP BAR -->
+
+    <header class="topbar">
+
+        <button
+            class="mobile-menu-btn"
+            id="menuButton"
+            aria-label="Toggle menu"
+        >
+            ☰
+        </button>
+
+        <div class="top-logo">
+            Campaign<span>Pro</span>
+        </div>
+
+        <div class="page-title">
+            Campaign Management
+        </div>
+
+        <div class="auth-buttons">
+
+            <a
+                href="login.html"
+                class="auth-btn login-btn"
+            >
+                Login
+            </a>
+
+            <a
+                href="signup.html"
+                class="auth-btn signup-btn"
+            >
+                Sign Up
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =================================================
+         CONTENT
+    ================================================= -->
+
+    <div class="content">
+
+
+        <!-- HERO -->
+
+        <section class="hero">
+
+            <div class="hero-label">
+                CAMPAIGNPRO • ADVERTISING PLATFORM
+            </div>
+
+            <h1>
+
+                Deliver Your Ads
+
+                <span>
+                    to the Right Audience
+                </span>
+
+            </h1>
+
+            <p>
+
+                Effortlessly build advertising campaigns with CampaignPro,
+                customize your budget, and accurately target your desired countries.
+
+            </p>
+
+
+            <a
+                href="signup.html"
+                class="primary-btn"
+                id="createCampaignBtn"
+            >
+                Create New Campaign
+            </a>
+
+
+            <a
+                href="login.html"
+                class="secondary-btn"
+            >
+                Login
+            </a>
+
+        </section>
+
+
+                <!-- =================================================
+             CAMPAIGN PLANS
+        ================================================= -->
+
+        <section class="section">
+
+            <div class="section-heading">
+
+                <h2>
+                    Campaign Plans
+                </h2>
+
+                <p>
+                    Choose a tailored campaign plan that fits your goals and budget.
+                </p>
+
+            </div>
+
+
+            <div class="cards">
+
+
+                <!-- NORMAL -->
+
+                <div class="card">
+
+                    <div class="card-icon">
+                        🟢
+                    </div>
+
+                    <h3>
+                        Normal Campaign
+                    </h3>
+
+                    <div class="price">
+                        BDT 50
+                    </div>
+
+                    <p>
+
+                        An ideal, straightforward campaign plan designed for compact, targeted audiences.
+
+                    </p>
+
+                    <div class="limit">
+
+                        🌍 Up to
+
+                        <strong>
+                            10
+                        </strong>
+
+                        countries
+
+                    </div>
+
+                </div>
+
+
+                <!-- MEDIUM -->
+
+                <div class="card">
+
+                    <div class="card-icon">
+                        🟡
+                    </div>
+
+                    <h3>
+                        Medium Campaign
+                    </h3>
+
+                    <div class="price">
+                        BDT 100
+                    </div>
+
+                    <p>
+
+                        Perfect for scaling your reach across larger audiences and targeting multiple locations.
+
+                    </p>
+
+                    <div class="limit">
+
+                        🌍 Up to
+
+                        <strong>
+                            20
+                        </strong>
+
+                        countries
+
+                    </div>
+
+                </div>
+
+
+                <!-- HIGH -->
+
+                <div class="card">
+
+                    <div class="card-icon">
+                        🔴
+                    </div>
+
+                    <h3>
+                        High Campaign
+                    </h3>
+
+                    <div class="price">
+                        BDT 200
+                    </div>
+
+                    <p>
+
+                        Built for extensive market penetration with comprehensive multi-country coverage.
+
+                    </p>
+
+                    <div class="limit">
+
+                        🌍 Up to
+
+                        <strong>
+                            30
+                        </strong>
+
+                        countries
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- =================================================
+             HOW IT WORKS
+        ================================================= -->
+
+        <section class="section">
+
+            <div class="section-heading">
+
+                <h2>
+                    How It Works
+                </h2>
+
+                <p>
+
+                    Launch your campaign in just a few simple steps.
+
+                </p>
+
+            </div>
+
+
+            <div class="steps">
+
+
+                <div class="step">
+
+                    <div class="step-number">
+                        1
+                    </div>
+
+                    <h3>
+                        Create Account
+                    </h3>
+
+                    <p>
+
+                        Sign up for free and get immediate access to your CampaignPro dashboard.
+
+                    </p>
+
+                </div>
+
+
+                <div class="step">
+
+                    <div class="step-number">
+                        2
+                    </div>
+
+                    <h3>
+                        Deposit Balance
+                    </h3>
+
+                    <p>
+
+                        Add funds smoothly using your preferred payment method to run campaigns.
+
+                    </p>
+
+                </div>
+
+
+                <div class="step">
+
+                    <div class="step-number">
+                        3
+                    </div>
+
+                    <h3>
+                        Launch Campaign
+                    </h3>
+
+                    <p>
+
+                        Select your plan, choose target countries, submit your destination URL, and go live.
+
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             FINAL CTA
+        ================================================= -->
+
+        <section class="section">
+
+            <div
+                class="card"
+                style="
+                    text-align:center;
+                    padding:35px 20px;
+                "
+            >
+
+                <h2
+                    style="margin-bottom:10px;"
+                >
+                    Ready to Launch Your Campaign?
+                </h2>
+
+                <p
+                    style="margin-bottom:20px;"
+                >
+
+                    Register today and deploy your first high-converting campaign in minutes.
+
+                </p>
+
+                <a
+                    href="signup.html"
+                    class="primary-btn"
+                >
+                    Get Started Now
+                </a>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <strong>
+            CampaignPro
+        </strong>
+
+        <br>
+
+        Professional Campaign Management Platform
+
+        <br><br>
+
+        © 2026 CampaignPro. All rights reserved.
+
+    </footer>
+
+</main>
+
+
+<!-- =====================================================
+     FIREBASE AUTH + SIDEBAR
+===================================================== -->
+
+<script type="module">
+
+    import {
+        auth
+    } from "./firebase.js";
+
+    import {
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+
+    const body =
+        document.body;
+
+    const menuButton =
+        document.getElementById(
+            "menuButton"
+        );
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+    const createCampaignBtn =
+        document.getElementById(
+            "createCampaignBtn"
+        );
+
+
+    /* =====================================================
+       FIREBASE LOGIN STATUS
+    ===================================================== */
+
+    onAuthStateChanged(
+        auth,
+        function(user) {
+
+            if (user) {
+
+                /*
+                 * User logged in
+                 */
+
+                body.classList.add(
+                    "logged-in"
+                );
+
+            } else {
+
+                /*
+                 * User logged out
+                 */
+
+                body.classList.remove(
+                    "logged-in"
+                );
+
+                sidebar.classList.remove(
+                    "open"
+                );
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       CREATE CAMPAIGN BUTTON
+    ===================================================== */
+
+    createCampaignBtn.addEventListener(
+        "click",
+        function(event) {
+
+            /*
+             * Firebase current user
+             */
+
+            if (auth.currentUser) {
+
+                /*
+                 * Logged in
+                 */
+
+                event.preventDefault();
+
+                window.location.href =
+                    "campaign.html";
+
+            } else {
+
+                /*
+                 * Not logged in
+                 */
+
+                event.preventDefault();
+
+                window.location.href =
+                    "signup.html";
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       MOBILE SIDEBAR
+    ===================================================== */
+
+    menuButton.addEventListener(
+        "click",
+        function() {
+
+            if (
+                body.classList.contains(
+                    "logged-in"
+                )
+            ) {
+
+                sidebar.classList.toggle(
+                    "open"
+                );
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       CLOSE SIDEBAR
+    ===================================================== */
+
+    document.addEventListener(
+        "click",
+        function(event) {
+
+            if (
+                window.innerWidth <= 800 &&
+                sidebar.classList.contains(
+                    "open"
+                ) &&
+                !sidebar.contains(
+                    event.target
+                ) &&
+                !menuButton.contains(
+                    event.target
+                )
+            ) {
+
+                sidebar.classList.remove(
+                    "open"
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>
